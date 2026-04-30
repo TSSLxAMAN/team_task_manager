@@ -54,12 +54,7 @@ export function Sidebar() {
     }}>
       {/* Brand */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 6px 4px' }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 8,
-          background: 'var(--accent)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'white', fontWeight: 700, fontSize: 13,
-        }}>T</div>
+        <img src="/public/favicon.ico" alt="logo" className='h-16 w-16 rounded-2xl' />
         <div style={{ fontWeight: 600, fontSize: 15, letterSpacing: '-0.01em' }}>TeamFlow</div>
       </div>
 
