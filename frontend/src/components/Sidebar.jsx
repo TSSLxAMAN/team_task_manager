@@ -53,9 +53,8 @@ export function Sidebar() {
       minHeight: '100vh',
     }}>
       {/* Brand */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 6px 4px' }}>
-        <img src="/public/favicon.ico" alt="logo" className='h-16 w-16 rounded-2xl' />
-        <div style={{ fontWeight: 600, fontSize: 15, letterSpacing: '-0.01em' }}>TeamFlow</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent:'center' }}>
+        <img src="/TeamFlow.png" alt="TeamFlow logo" className="h-24 w-48 rounded-xl" />
       </div>
 
       {/* User block */}
