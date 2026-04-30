@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+ENV/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+mediafiles/
+media/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+
+# Testing
+.coverage
+.tox/
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# PyInstaller
+*.spec
+
+# Jupyter
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
