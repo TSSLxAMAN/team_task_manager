@@ -9,6 +9,7 @@ python-dotenv==1.0.1
 gunicorn==22.0.0
 whitenoise==6.7.0
 django-filter==24.2
+requests==2.32.3
 python-slugify==8.0.4
 Pillow==11.1.0
 dj-database-url==2.1.0
