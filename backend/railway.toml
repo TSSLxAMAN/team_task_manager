@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+
+[deploy]
+startCommand = "gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --log-file -"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
