@@ -53,7 +53,7 @@ export function Sidebar() {
       minHeight: '100vh',
     }}>
       {/* Brand */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent:'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img src="/TeamFlow.png" alt="TeamFlow logo" className="h-24 w-48 rounded-xl" />
       </div>
 

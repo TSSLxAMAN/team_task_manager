@@ -39,8 +39,7 @@ export default function Login() {
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 9, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 15 }}>T</div>
-          <div style={{ fontWeight: 600, fontSize: 17, letterSpacing: '-0.01em' }}>TeamFlow</div>
+          <img src="/TeamFlow.png" alt="TeamFlow logo" className="h-24 w-48 rounded-xl" />
         </div>
 
         <div style={{ maxWidth: 460 }}>
@@ -51,15 +50,7 @@ export default function Login() {
           <p style={{ marginTop: 20, fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.55, maxWidth: 420 }}>
             A calm, focused workspace for product teams. Assign work, track progress, ship reviews.
           </p>
-          <div style={{
-            marginTop: 36, width: 380, height: 220, borderRadius: 16,
-            backgroundImage: 'repeating-linear-gradient(135deg, var(--border) 0px, var(--border) 1px, transparent 1px, transparent 12px)',
-            backgroundColor: 'var(--bg)', border: '1px dashed var(--border-strong)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-faint)', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, textAlign: 'center',
-          }}>
-            [ illustration placeholder ]
-          </div>
+          
         </div>
 
         <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-faint)' }}>
