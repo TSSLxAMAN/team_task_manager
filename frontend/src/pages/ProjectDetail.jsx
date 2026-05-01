@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ArrowLeft, Plus, Users, ChevronRight, Calendar } from 'lucide-react'
-import { fetchProject } from '../store/projectSlice'
+import { ArrowLeft, Plus, Users, ChevronRight, Calendar, BookOpen, Pencil, X, Check } from 'lucide-react'
+import { fetchProject, updateProjectReadme } from '../store/projectSlice'
 import { fetchProjectTasks, createTask } from '../store/taskSlice'
 import { addMember, removeMember } from '../store/projectSlice'
 import { ProgressBar } from '../components/ProgressBar'
@@ -28,6 +28,9 @@ export default function ProjectDetail() {
   const [allUsers, setAllUsers] = useState([])
   const [showAddMember, setShowAddMember] = useState(false)
   const [memberSearch, setMemberSearch] = useState('')
+  const [editingReadme, setEditingReadme] = useState(false)
+  const [readmeDraft, setReadmeDraft] = useState('')
+  const [savingReadme, setSavingReadme] = useState(false)
 
   useEffect(() => {
     dispatch(fetchProject(id))
@@ -64,6 +67,14 @@ export default function ProjectDetail() {
     } else {
       toast.error(result.payload?.detail || 'Failed')
     }
+  }
+
+  const handleSaveReadme = async () => {
+    setSavingReadme(true)
+    const result = await dispatch(updateProjectReadme({ id, readme: readmeDraft }))
+    setSavingReadme(false)
+    if (!result.error) { setEditingReadme(false); toast.success('Docs saved') }
+    else toast.error('Failed to save')
   }
 
   const handleRemoveMember = async (userId) => {
@@ -127,14 +138,14 @@ export default function ProjectDetail() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 16 }}>
-        {[{ id: 'tasks', label: `Tasks (${tasks.length})` }, { id: 'members', label: `Members (${members.length})` }].map(t => (
+        {[{ id: 'tasks', label: `Tasks (${tasks.length})` }, { id: 'members', label: `Members (${members.length})` }, { id: 'docs', label: 'Docs' }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '10px 14px', background: 'transparent', border: 'none', borderBottom: '2px solid ' + (tab === t.id ? 'var(--accent)' : 'transparent'), color: tab === t.id ? 'var(--text)' : 'var(--text-muted)', fontWeight: tab === t.id ? 500 : 400, fontSize: 13, cursor: 'pointer', marginBottom: -1 }}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 'tasks' ? (
+      {tab === 'tasks' && (
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -161,7 +172,8 @@ export default function ProjectDetail() {
             </tbody>
           </table>
         </div>
-      ) : (
+      )}
+      { tab == 'members' &&(
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, padding: 8, boxShadow: 'var(--shadow-sm)' }}>
           {user?.role === 'admin' && (
             <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', marginBottom: 4, display: 'flex', justifyContent: 'flex-end' }}>
@@ -181,6 +193,56 @@ export default function ProjectDetail() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {tab === 'docs' && (
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--shadow-sm)', marginTop: '16px' }}>
+          {/* Docs toolbar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-muted)' }}>
+              <BookOpen size={14} />
+              Project Docs
+            </div>
+            {user?.role === 'admin' && !editingReadme && (
+              <button onClick={() => { setReadmeDraft(project.readme || ''); setEditingReadme(true) }} style={btnSecondary}>
+                <Pencil size={13} /> Edit
+              </button>
+            )}
+            {editingReadme && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setEditingReadme(false)} style={btnSecondary}><X size={13} /> Cancel</button>
+                <button onClick={handleSaveReadme} disabled={savingReadme} style={btnPrimary}><Check size={13} /> {savingReadme ? 'Saving…' : 'Save'}</button>
+              </div>
+            )}
+          </div>
+
+          {editingReadme ? (
+            <div style={{ padding: 20 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Supports markdown — # headings, **bold**, `code`, ```code blocks```, - lists</div>
+              <textarea
+                value={readmeDraft}
+                onChange={e => setReadmeDraft(e.target.value)}
+                autoFocus
+                placeholder={DEFAULT_README}
+                style={{ width: '100%', minHeight: 480, padding: '14px 16px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 13, fontFamily: 'var(--font-mono, monospace)', lineHeight: 1.7, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+          ) : (
+            <div style={{ padding: '24px 28px' }}>
+              {project.readme ? (
+                <MarkdownView content={project.readme} />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
+                  <BookOpen size={32} style={{ opacity: 0.3, marginBottom: 12 }} />
+                  <div style={{ fontSize: 14, marginBottom: 4 }}>No documentation yet</div>
+                  {user?.role === 'admin' && (
+                    <div style={{ fontSize: 12 }}>Click <strong>Edit</strong> to add onboarding instructions for your team.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -323,3 +385,93 @@ const btnPrimary = { display: 'inline-flex', alignItems: 'center', gap: 8, paddi
 const btnSecondary = { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 10, background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 13, fontWeight: 500, cursor: 'pointer', height: 36 }
 const labelStyle = { display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 6 }
 const inputStyle = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: 13, height: 40, outline: 'none' }
+
+const DEFAULT_README = `# Project Setup
+
+## Repository
+\`\`\`
+git clone https://github.com/your-org/your-repo.git
+cd your-repo
+\`\`\`
+
+## Local Setup
+\`\`\`
+npm install
+cp .env.example .env
+npm run dev
+\`\`\`
+
+## Environment Variables
+- \`VITE_API_URL\` — backend API base URL
+
+## Branch Naming
+Branches are auto-generated as \`feature/{task-number}-{task-slug}\`
+Copy the branch name from the task card.
+
+## Workflow
+- Pick a task assigned to you
+- Start the timer when you begin
+- Submit an MR link when done
+- Admin will review and close or send back`
+
+function inlineFormat(text) {
+  const parts = []
+  const re = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g
+  let last = 0, m
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index))
+    const raw = m[0]
+    if (raw.startsWith('**')) parts.push(<strong key={m.index}>{raw.slice(2, -2)}</strong>)
+    else if (raw.startsWith('*')) parts.push(<em key={m.index}>{raw.slice(1, -1)}</em>)
+    else parts.push(<code key={m.index} style={{ background: 'var(--bg)', padding: '2px 6px', borderRadius: 5, fontFamily: 'monospace', fontSize: '0.9em', border: '1px solid var(--border)' }}>{raw.slice(1, -1)}</code>)
+    last = m.index + raw.length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
+function MarkdownView({ content }) {
+  const lines = content.split('\n')
+  const out = []
+  let i = 0
+  const hStyle = (size, weight = 600) => ({ margin: '20px 0 8px', fontSize: size, fontWeight: weight, letterSpacing: '-0.01em' })
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    if (line.startsWith('```')) {
+      const lang = line.slice(3).trim()
+      const end = lines.findIndex((l, j) => j > i && l.startsWith('```'))
+      const code = lines.slice(i + 1, end === -1 ? undefined : end).join('\n')
+      out.push(
+        <pre key={i} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', overflowX: 'auto', margin: '12px 0' }}>
+          <code style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6 }}>{code}</code>
+        </pre>
+      )
+      i = end === -1 ? lines.length : end + 1
+      continue
+    }
+
+    if (line.startsWith('# ')) { out.push(<h1 key={i} style={hStyle(22)}>{inlineFormat(line.slice(2))}</h1>); i++; continue }
+    if (line.startsWith('## ')) { out.push(<h2 key={i} style={hStyle(17)}>{inlineFormat(line.slice(3))}</h2>); i++; continue }
+    if (line.startsWith('### ')) { out.push(<h3 key={i} style={hStyle(14)}>{inlineFormat(line.slice(4))}</h3>); i++; continue }
+    if (line.match(/^---+$/)) { out.push(<hr key={i} style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '18px 0' }} />); i++; continue }
+
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      const items = []
+      while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('* '))) {
+        items.push(<li key={i} style={{ marginBottom: 4 }}>{inlineFormat(lines[i].slice(2))}</li>)
+        i++
+      }
+      out.push(<ul key={`ul${i}`} style={{ margin: '8px 0', paddingLeft: 24, lineHeight: 1.7 }}>{items}</ul>)
+      continue
+    }
+
+    if (!line.trim()) { out.push(<div key={i} style={{ height: 8 }} />); i++; continue }
+
+    out.push(<p key={i} style={{ margin: '6px 0', lineHeight: 1.7, fontSize: 14 }}>{inlineFormat(line)}</p>)
+    i++
+  }
+
+  return <div style={{ color: 'var(--text)', maxWidth: 760 }}>{out}</div>
+}

@@ -10,6 +10,7 @@ PROJECT_COLORS = [
 class Project(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    readme = models.TextField(blank=True, default='')
     color = models.CharField(max_length=20, default='#D97706')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_projects')
     members = models.ManyToManyField(User, related_name='projects', blank=True)

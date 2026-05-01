@@ -46,6 +46,15 @@ export const addMember = createAsyncThunk('projects/addMember', async ({ id, ema
   }
 })
 
+export const updateProjectReadme = createAsyncThunk('projects/updateReadme', async ({ id, readme }, { rejectWithValue }) => {
+  try {
+    const res = await api.patch(`/projects/${id}/`, { readme })
+    return res.data
+  } catch (err) {
+    return rejectWithValue(err.response?.data)
+  }
+})
+
 export const removeMember = createAsyncThunk('projects/removeMember', async ({ projectId, userId }, { rejectWithValue }) => {
   try {
     const res = await api.delete(`/projects/${projectId}/members/${userId}/`)
@@ -79,6 +88,7 @@ const projectSlice = createSlice({
       .addCase(fetchMembers.fulfilled, (state, action) => { state.members[action.payload.id] = action.payload.members })
       .addCase(addMember.fulfilled, (state, action) => { state.members[action.payload.id] = action.payload.members })
       .addCase(removeMember.fulfilled, (state, action) => { state.members[action.payload.id] = action.payload.members })
+      .addCase(updateProjectReadme.fulfilled, (state, action) => { state.current = action.payload })
   },
 })
 
