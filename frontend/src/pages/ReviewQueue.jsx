@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, Calendar } from 'lucide-react'
@@ -12,25 +12,59 @@ export default function ReviewQueue() {
   const dispatch = useDispatch()
   const nav = useNavigate()
   const { reviewQueue: tasks } = useSelector((s) => s.tasks)
+  const [selectedProject, setSelectedProject] = useState('all')
 
   useEffect(() => { dispatch(fetchReviewQueue()) }, [dispatch])
 
+  const projects = useMemo(() => {
+    const map = new Map()
+    tasks.forEach(t => {
+      if (t.project_name && !map.has(t.project_name)) {
+        map.set(t.project_name, { name: t.project_name, color: t.project_color })
+      }
+    })
+    return Array.from(map.values())
+  }, [tasks])
+
+  const filtered = selectedProject === 'all' ? tasks : tasks.filter(t => t.project_name === selectedProject)
+
   return (
     <div className="fade-in" style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 40px 60px' }}>
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em' }}>Review queue</h1>
         <div style={{ marginTop: 6, color: 'var(--text-muted)', fontSize: 14 }}>
-          {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} waiting on your review
+          {filtered.length} {filtered.length === 1 ? 'task' : 'tasks'} waiting on your review
         </div>
       </div>
 
+      {projects.length > 1 && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+          <button
+            onClick={() => setSelectedProject('all')}
+            style={{ padding: '5px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: '1px solid var(--border)', background: selectedProject === 'all' ? 'var(--accent)' : 'var(--card)', color: selectedProject === 'all' ? 'white' : 'var(--text)', transition: 'all 100ms' }}
+          >
+            All projects
+          </button>
+          {projects.map(p => (
+            <button
+              key={p.name}
+              onClick={() => setSelectedProject(p.name)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, cursor: 'pointer', border: '1px solid var(--border)', background: selectedProject === p.name ? 'var(--bg)' : 'var(--card)', color: selectedProject === p.name ? 'var(--text)' : 'var(--text-muted)', outline: selectedProject === p.name ? '2px solid ' + (p.color || 'var(--accent)') : 'none', outlineOffset: -1, transition: 'all 100ms' }}
+            >
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: p.color || 'var(--accent)', flexShrink: 0 }} />
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, padding: 8, boxShadow: 'var(--shadow-sm)' }}>
-        {tasks.length === 0 ? (
+        {filtered.length === 0 ? (
           <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-            All clear — nothing waiting on review.
+            {selectedProject === 'all' ? 'All clear — nothing waiting on review.' : `No tasks under review in ${selectedProject}.`}
           </div>
         ) : (
-          tasks.map(t => (
+          filtered.map(t => (
             <button
               key={t.id}
               onClick={() => nav(`/tasks/${t.id}`)}
