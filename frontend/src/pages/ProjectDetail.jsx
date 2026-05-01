@@ -158,14 +158,7 @@ export default function ProjectDetail() {
               </tr>
             </thead>
             <tbody>
-              {topTasks.map(t => (
-                <>
-                  <TaskRow key={t.id} task={t} onClick={() => nav(`/tasks/${t.id}`)} />
-                  {(t.subtasks || []).map((sub, i, arr) => (
-                    <TaskRow key={sub.id} task={sub} onClick={() => nav(`/tasks/${sub.id}`)} indent isLast={i === arr.length - 1} />
-                  ))}
-                </>
-              ))}
+              {topTasks.flatMap(t => renderTaskRows(t, nav))}
               {topTasks.length === 0 && (
                 <tr><td colSpan={7} style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No tasks yet. {user?.role === 'admin' && 'Add the first task.'}</td></tr>
               )}
@@ -357,8 +350,18 @@ export default function ProjectDetail() {
   )
 }
 
-function TaskRow({ task, onClick, indent = false, isLast = false }) {
+function renderTaskRows(task, nav, depth = 0, isLast = true) {
+  const rows = [<TaskRow key={task.id} task={task} onClick={() => nav(`/tasks/${task.id}`)} depth={depth} isLast={isLast} />]
+  const subs = task.subtasks || []
+  subs.forEach((sub, i) => {
+    rows.push(...renderTaskRows(sub, nav, depth + 1, i === subs.length - 1))
+  })
+  return rows
+}
+
+function TaskRow({ task, onClick, depth = 0, isLast = false }) {
   const overdue = isOverdue(task.due_date, task.status)
+  const padLeft = depth * 20
   return (
     <tr onClick={onClick} style={{ cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
       onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg)'}
@@ -366,9 +369,9 @@ function TaskRow({ task, onClick, indent = false, isLast = false }) {
     >
       <td style={{ padding: '12px 14px' }}><span className="mono" style={{ color: 'var(--text-faint)', fontSize: 12 }}>#{task.task_number}</span></td>
       <td style={{ padding: '12px 14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: indent ? 24 : 0, position: 'relative' }}>
-          {indent && <span style={{ position: 'absolute', left: 4, top: -10, bottom: isLast ? '50%' : -10, width: 1, background: 'var(--border-strong)' }} />}
-          {indent && <span style={{ position: 'absolute', left: 4, top: '50%', width: 14, height: 1, background: 'var(--border-strong)' }} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: depth > 0 ? padLeft : 0, position: 'relative' }}>
+          {depth > 0 && <span style={{ position: 'absolute', left: padLeft - 16, top: -10, bottom: isLast ? '50%' : -10, width: 1, background: 'var(--border-strong)' }} />}
+          {depth > 0 && <span style={{ position: 'absolute', left: padLeft - 16, top: '50%', width: 12, height: 1, background: 'var(--border-strong)' }} />}
           <span style={{ fontSize: 13, fontWeight: 500 }}>{task.title}</span>
         </div>
       </td>
